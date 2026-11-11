@@ -1,0 +1,30 @@
+sequenceDiagram
+    autonumber
+    participant Train as Training Loop
+    participant Model as NeuralNetwork.forward()
+    participant Flat as Flatten
+    participant L1 as Linear 784 to 512
+    participant R1 as ReLU 1
+    participant L2 as Linear 512 to 512
+    participant R2 as ReLU 2
+    participant L3 as Linear 512 to 10
+
+    Note over Train,L3: B = current batch size (up to 64)
+    Train->>Model: X with shape [B, 1, 28, 28]
+    Model->>Flat: Flatten image dimensions
+    Flat-->>Model: [B, 784]
+
+    Model->>L1: Apply learned weights and bias
+    L1-->>Model: [B, 512]
+    Model->>R1: max(0, x)
+    R1-->>Model: [B, 512]
+
+    Model->>L2: Apply learned weights and bias
+    L2-->>Model: [B, 512]
+    Model->>R2: max(0, x)
+    R2-->>Model: [B, 512]
+
+    Model->>L3: Apply learned weights and bias
+    L3-->>Model: Logits [B, 10]
+    Model-->>Train: Raw scores for 10 clothing classes
+    Note over Train,Model: Logits go directly to CrossEntropyLoss<br/>No explicit softmax layer

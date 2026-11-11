@@ -1,0 +1,35 @@
+sequenceDiagram
+    autonumber
+    participant Train as Training Loop
+    participant DL as Training DataLoader
+    participant Model as NeuralNetwork
+    participant Loss as CrossEntropyLoss
+    participant Grad as Autograd
+    participant Opt as SGD Optimizer
+
+    loop Each of 5 epochs
+        Train->>Model: model.train()
+
+        loop Each training batch (up to 64 images)
+            Train->>DL: Request next batch
+            DL-->>Train: Images X and labels y
+            Train->>Train: Move X and y to device
+
+            Train->>Model: model(X)
+            Note over Model: Forward-pass details in model-architecture.mmd
+            Model-->>Train: Logits with shape [B, 10]
+
+            Train->>Loss: loss_fn(logits, y)
+            Loss-->>Train: Scalar loss
+
+            Train->>Grad: loss.backward()
+            Grad->>Model: Backpropagate through layers and accumulate gradients
+
+            Train->>Opt: optimizer.step()
+            Opt->>Model: Update weights and biases
+            Note over Model,Opt: Parameter = parameter - 0.001 × gradient
+
+            Train->>Opt: optimizer.zero_grad()
+            Opt->>Model: Clear parameter gradients for next batch
+        end
+    end
