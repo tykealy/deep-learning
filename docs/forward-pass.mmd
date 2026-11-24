@@ -1,0 +1,22 @@
+sequenceDiagram
+    autonumber
+    participant Input as Input x
+    participant Linear as Linear calculation
+    participant Params as Weights w and bias b
+    participant Loss as Binary cross-entropy
+    participant Target as Target y
+    participant Auto as Autograd
+
+    Note over Input,Target: One example: x = [1, 1, 1, 1, 1], y = [0, 0, 0]<br/>w has shape [5, 3] and b has shape [3]<br/>Both contain zeros
+    Input->>Linear: x, shape [5]: five input features
+    Params->>Linear: w and b, both require gradients
+    Linear->>Linear: x @ w: combine all five inputs for each of three outputs
+    Note over Linear: x @ w = [0, 0, 0], shape [3]
+    Linear->>Linear: Add b: z = x @ w + b
+    Linear-->>Loss: Logits z = [0, 0, 0], shape [3]
+    Target->>Loss: y = [0, 0, 0], shape [3]
+    Loss->>Loss: Compare each logit with its corresponding target<br/>sigmoid(0) = 0.5 for each output
+    Note over Loss: Individual losses = [0.6931, 0.6931, 0.6931]
+    Loss->>Loss: Average the three individual losses
+    Loss-->>Input: Scalar loss = 0.6931, shape []
+    Note over Loss,Auto: Autograd tracks the operations involving w and b<br/>so loss.backward() can traverse them later

@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    participant Train as Training code
+    participant Auto as Autograd
+    participant Loss as Binary cross-entropy
+    participant Linear as Linear calculation
+    participant Params as Weights w and bias b
+    participant Opt as Optimizer
+
+    Note over Train,Params: Same example: x = [1, 1, 1, 1, 1], y = [0, 0, 0]<br/>w and b are zeros<br/>logits z = [0, 0, 0] and loss = 0.6931
+    Train->>Auto: loss.backward()
+    Note over Auto: Start with d loss / d loss = 1
+    Auto->>Loss: Traverse loss calculation backward
+    Loss->>Loss: For each j: d loss / d z[j] = (sigmoid(z[j]) - y[j]) / 3
+    Loss-->>Linear: d loss / d z = [1/6, 1/6, 1/6], shape [3]
+    Note over Loss,Linear: The division by 3 comes from averaging the three losses
+    Linear->>Linear: For each weight: d loss / d w[i, j] = x[i] × d loss / d z[j]
+    Linear->>Linear: For each bias: d loss / d b[j] = d loss / d z[j]
+    Linear-->>Params: Accumulate gradients in w.grad and b.grad
+    Note over Params: w.grad has shape [5, 3], with every value 1/6<br/>b.grad has shape [3], with every value 1/6<br/>x contains ones, so each weight gradient equals its output gradient
+    Note over Train,Params: backward() calculates gradients<br/>It does not update w or b
+    Train->>Opt: optimizer.step()
+    Opt->>Params: Update parameters using their gradients
+    Note over Params,Opt: With SGD and learning rate 0.1:<br/>each parameter changes from 0 to approximately -0.0167
+    Train->>Opt: optimizer.zero_grad()
+    Opt->>Params: Clear gradients before the next backward pass
